@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Sleep Tones">
+<title>Sleep Tones</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { background: #06060f; }
+body {
+  color: #d0d0e8; font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 2rem 1.25rem 3rem; min-height: 100vh;
+}
+h1 { font-size: 14px; font-weight: 500; color: #7060b8; letter-spacing: 0.16em; margin-bottom: 0.2rem; }
+.sub { font-size: 10px; color: #282840; margin-bottom: 2rem; letter-spacing: 0.1em; }
+.orb-wrap { position: relative; width: 176px; height: 176px; margin-bottom: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.ring { position: absolute; border-radius: 50%; border: 1px solid #1e1840; opacity: 0; pointer-events: none; }
+.ring.r1{width:210px;height:210px;} .ring.r2{width:250px;height:250px;} .ring.r3{width:290px;height:290px;}
+.on .ring.r1{opacity:1;animation:rp 5s ease-out infinite 0s;}
+.on .ring.r2{opacity:1;animation:rp 5s ease-out infinite 1.7s;}
+.on .ring.r3{opacity:1;animation:rp 5s ease-out infinite 3.4s;}
+@keyframes rp{0%{opacity:0.5;transform:scale(0.93)}100%{opacity:0;transform:scale(1.07)}}
+.orb{width:162px;height:162px;border-radius:50%;background:#0a0a1c;border:1.5px solid #1a1440;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;z-index:1;transition:border-color 0.7s;}
+.on .orb{border-color:#5040a0;}
+.pi{font-size:24px;color:#7060b8;user-select:none;}
+.ol{font-size:10px;color:#302858;letter-spacing:0.05em;text-align:center;padding:0 14px;line-height:1.6;}
+.now-playing{font-size:10px;color:#28265a;text-align:center;margin-bottom:1.5rem;letter-spacing:0.05em;min-height:14px;}
+.now-playing.active{color:#5040a0;}
+.sec{width:100%;max-width:340px;margin-bottom:1.5rem;}
+.slbl{font-size:10px;color:#302850;letter-spacing:0.1em;margin-bottom:0.65rem;text-transform:uppercase;}
+.track-list{display:flex;flex-direction:column;gap:8px;}
+.track-row{background:#0a0a1c;border:1px solid #141430;border-radius:10px;padding:10px 12px;transition:all 0.2s;}
+.track-row.act{background:#121228;border-color:#402e90;}
+.track-top{display:flex;align-items:center;justify-content:space-between;}
+.track-name{font-size:12px;font-weight:500;color:#7060b8;}
+.track-sub{font-size:9px;color:#26244a;margin-top:2px;}
+.track-row.act .track-sub{color:#402e90;}
+.track-status{font-size:9px;color:#26244a;min-width:44px;text-align:right;}
+.track-row.loaded .track-status{color:#5040a0;}
+.load-btn{background:#141430;border:1px solid #2a2060;border-radius:6px;color:#6050a8;font-size:9px;padding:5px 10px;cursor:pointer;margin-top:8px;display:block;width:100%;text-align:center;letter-spacing:0.04em;}
+input[type=file]{display:none;}
+.loaded-name{font-size:9px;color:#4a3898;margin-top:5px;word-break:break-all;line-height:1.4;}
+.loading-msg{font-size:9px;color:#4a3060;margin-top:5px;display:none;}
+.rain-toggle{display:flex;align-items:center;justify-content:space-between;margin-top:10px;}
+.rain-toggle-label{font-size:10px;color:#302850;}
+.toggle-wrap{position:relative;width:36px;height:20px;cursor:pointer;}
+.toggle-wrap input{opacity:0;width:0;height:0;}
+.toggle-slider{position:absolute;top:0;left:0;right:0;bottom:0;background:#141430;border-radius:20px;border:1px solid #2a2060;transition:0.3s;}
+.toggle-slider:before{position:absolute;content:"";height:14px;width:14px;left:2px;bottom:2px;background:#38306a;border-radius:50%;transition:0.3s;}
+input:checked + .toggle-slider{background:#1e1848;border-color:#402e90;}
+input:checked + .toggle-slider:before{transform:translateX(16px);background:#7060b8;}
+.freq-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.fb{background:#0a0a1c;border:1px solid #141430;border-radius:10px;padding:9px 4px;text-align:center;cursor:pointer;transition:all 0.2s;}
+.fb.act{background:#121228;border-color:#402e90;}
+.fb .fn{font-size:11px;font-weight:500;color:#7060b8;}
+.fb .fh{font-size:9px;color:#26244a;margin-top:1px;}
+.fb .ft{font-size:9px;color:#22204a;margin-top:2px;}
+.fb.act .ft{color:#402e90;}
+.sr{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.sl{font-size:10px;color:#302850;min-width:58px;}
+input[type=range]{flex:1;-webkit-appearance:none;height:3px;background:#141430;border-radius:2px;outline:none;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#402e90;cursor:pointer;border:2px solid #06060f;}
+.sv{font-size:10px;color:#302850;min-width:30px;text-align:right;}
+.timer-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.tmb{background:#0a0a1c;border:1px solid #141430;border-radius:10px;padding:10px 4px;text-align:center;cursor:pointer;font-size:11px;color:#7060b8;transition:all 0.2s;}
+.tmb.act{background:#121228;border-color:#402e90;}
+.tmb.off{color:#26244a;}
+.tmd{text-align:center;font-size:10px;color:#26244a;margin-top:0.65rem;min-height:16px;letter-spacing:0.05em;}
+.tmd.live{color:#402e90;}
+.hint{width:100%;max-width:340px;background:#0a0a14;border:1px solid #141428;border-radius:10px;padding:14px;margin-bottom:1.5rem;}
+.hint p{font-size:10px;color:#38306a;line-height:1.8;margin-bottom:4px;}
+.hint p:last-child{margin-bottom:0;}
+.hint strong{color:#5040a0;font-weight:500;}
+</style>
+</head>
+<body>
+
+<h1>SLEEP TONES</h1>
+<p class="sub">classical music · binaural beats · offline</p>
+
+<div class="orb-wrap" id="ow" onclick="togglePlay()">
+  <div class="ring r1"></div><div class="ring r2"></div><div class="ring r3"></div>
+  <div class="orb" id="orb">
+    <span class="pi" id="pi">&#9654;</span>
+    <span class="ol" id="ol">tap to begin</span>
+  </div>
+</div>
+
+<div class="now-playing" id="np">load a track below to begin</div>
+
+<div class="sec">
+  <div class="slbl">Music</div>
+  <div class="track-list">
+
+    <div class="track-row act" id="tr-0">
+      <div class="track-top">
+        <div><div class="track-name">Gymnopedie No.1</div><div class="track-sub">Satie · solo piano</div></div>
+        <div class="track-status" id="ts-0">no file</div>
+      </div>
+      <label class="load-btn" for="fi-0">&#128194; load mp3 file</label>
+      <input type="file" id="fi-0">
+      <div class="loading-msg" id="lm-0">reading file...</div>
+      <div class="loaded-name" id="ln-0"></div>
+    </div>
+
+    <div class="track-row" id="tr-1">
+      <div class="track-top">
+        <div><div class="track-name">Moonlight Sonata</div><div class="track-sub">Beethoven · adagio sostenuto</div></div>
+        <div class="track-status" id="ts-1">no file</div>
+      </div>
+      <label class="load-btn" for="fi-1">&#128194; load mp3 file</label>
+      <input type="file" id="fi-1">
+      <div class="loading-msg" id="lm-1">reading file...</div>
+      <div class="loaded-name" id="ln-1"></div>
+    </div>
+
+    <div class="track-row" id="tr-2">
+      <div class="track-top">
+        <div><div class="track-name">Pavane pour une infante</div><div class="track-sub">Ravel · solo piano</div></div>
+        <div class="track-status" id="ts-2">no file</div>
+      </div>
+      <label class="load-btn" for="fi-2">&#128194; load mp3 file</label>
+      <input type="file" id="fi-2">
+      <div class="loading-msg" id="lm-2">reading file...</div>
+      <div class="loaded-name" id="ln-2"></div>
+    </div>
+
+  </div>
+</div>
+
+<div class="sec">
+  <div class="slbl">Rainfall</div>
+  <div class="track-list">
+    <div class="track-row" id="tr-rain">
+      <div class="track-top">
+        <div><div class="track-name">Rain sound</div><div class="track-sub" id="rain-sub">load a rain MP3 to enable</div></div>
+        <div class="track-status" id="ts-rain">no file</div>
+      </div>
+      <label class="load-btn" for="fi-rain">&#128194; load mp3 file</label>
+      <input type="file" id="fi-rain">
+      <div class="loading-msg" id="lm-rain">reading file...</div>
+      <div class="loaded-name" id="ln-rain"></div>
+      <div class="rain-toggle" id="rain-toggle" style="display:none">
+        <span class="rain-toggle-label">Enable rainfall</span>
+        <label class="toggle-wrap">
+          <input type="checkbox" id="rain-chk" onchange="toggleRain()">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="hint">
+  <p><strong>Get free MP3s:</strong></p>
+  <p>Music: <strong>musopen.org</strong> — search each piece, download MP3, save to Files app</p>
+  <p>Rain: <strong>freesound.org</strong> — search "rain ambience", download, save to Files app</p>
+</div>
+
+<div class="sec">
+  <div class="slbl">Binaural frequency</div>
+  <div class="freq-grid" id="fg">
+    <div class="fb act" data-base="432" data-beat="2"><div class="fn">432 Hz</div><div class="fh">2 Hz delta</div><div class="ft">deep sleep</div></div>
+    <div class="fb" data-base="432" data-beat="6"><div class="fn">432 Hz</div><div class="fh">6 Hz theta</div><div class="ft">drift</div></div>
+    <div class="fb" data-base="528" data-beat="3"><div class="fn">528 Hz</div><div class="fh">3 Hz delta</div><div class="ft">healing</div></div>
+    <div class="fb" data-base="396" data-beat="2"><div class="fn">396 Hz</div><div class="fh">2 Hz delta</div><div class="ft">release</div></div>
+    <div class="fb" data-base="174" data-beat="2"><div class="fn">174 Hz</div><div class="fh">2 Hz delta</div><div class="ft">ground</div></div>
+    <div class="fb" data-base="963" data-beat="4"><div class="fn">963 Hz</div><div class="fh">4 Hz theta</div><div class="ft">higher</div></div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="slbl">Volume</div>
+  <div class="sr"><span class="sl">Music</span><input type="range" id="vm" min="0" max="100" value="85" step="1" oninput="updVol()"><span class="sv" id="svm">85%</span></div>
+  <div class="sr"><span class="sl">Rainfall</span><input type="range" id="vr" min="0" max="100" value="30" step="1" oninput="updVol()"><span class="sv" id="svr">30%</span></div>
+  <div class="sr"><span class="sl">Binaural</span><input type="range" id="vb" min="0" max="100" value="15" step="1" oninput="updVol()"><span class="sv" id="svb">15%</span></div>
+</div>
+
+<div class="sec">
+  <div class="slbl">Sleep timer</div>
+  <div class="timer-grid">
+    <div class="tmb off act" data-m="0">Off</div>
+    <div class="tmb" data-m="15">15 min</div>
+    <div class="tmb" data-m="30">30 min</div>
+    <div class="tmb" data-m="60">60 min</div>
+  </div>
+  <div class="tmd" id="tmd"></div>
+</div>
+
+<script>
+// ── State ────────────────────────────────────────────────────
+let actx = null, playing = false;
+let binL = null, binR = null, binGain = null;
+let masterGain = null, musGainNode = null, rainGainNode = null;
+let musSrc = null, rainSrc = null;
+let selTrack = 0, rainEnabled = false;
+let binBase = 432, binBeat = 2;
+let selMins = 0, timerSecs = 0, timerInt = null;
+
+// Store data URLs (base64) — most reliable on iOS
+const trackData  = [null, null, null];
+const trackNames = ['Gymnopedie No.1 · Satie', 'Moonlight Sonata · Beethoven', 'Pavane · Ravel'];
+let rainData = null;
+
+// Audio elements
+const musEl  = new Audio();
+const rainEl = new Audio();
+musEl.loop   = true;
+rainEl.loop  = true;
+
+// ── Read file as base64 data URL ─────────────────────────────
+function readAsDataURL(file, onDone) {
+  const reader = new FileReader();
+  reader.onload  = e => onDone(e.target.result);
+  reader.onerror = () => onDone(null);
+  reader.readAsDataURL(file);
+}
+
+// ── File loading ─────────────────────────────────────────────
+function setupFileInput(inputId, onFile) {
+  document.getElementById(inputId).addEventListener('change', function() {
+    const file = this.files[0];
+    if (!file) return;
+    onFile(file);
+  });
+}
+
+setupFileInput('fi-0', file => {
+  document.getElementById('lm-0').style.display = 'block';
+  document.getElementById('ts-0').textContent = 'loading...';
+  readAsDataURL(file, data => {
+    if (!data) { document.getElementById('ts-0').textContent = 'error'; return; }
+    trackData[0] = data;
+    document.getElementById('ts-0').textContent = '✓ ready';
+    document.getElementById('ln-0').textContent = file.name;
+    document.getElementById('lm-0').style.display = 'none';
+    document.getElementById('tr-0').classList.add('loaded');
+    selectTrack(0);
+  });
+});
+
+setupFileInput('fi-1', file => {
+  document.getElementById('lm-1').style.display = 'block';
+  document.getElementById('ts-1').textContent = 'loading...';
+  readAsDataURL(file, data => {
+    if (!data) { document.getElementById('ts-1').textContent = 'error'; return; }
+    trackData[1] = data;
+    document.getElementById('ts-1').textContent = '✓ ready';
+    document.getElementById('ln-1').textContent = file.name;
+    document.getElementById('lm-1').style.display = 'none';
+    document.getElementById('tr-1').classList.add('loaded');
+    selectTrack(1);
+  });
+});
+
+setupFileInput('fi-2', file => {
+  document.getElementById('lm-2').style.display = 'block';
+  document.getElementById('ts-2').textContent = 'loading...';
+  readAsDataURL(file, data => {
+    if (!data) { document.getElementById('ts-2').textContent = 'error'; return; }
+    trackData[2] = data;
+    document.getElementById('ts-2').textContent = '✓ ready';
+    document.getElementById('ln-2').textContent = file.name;
+    document.getElementById('lm-2').style.display = 'none';
+    document.getElementById('tr-2').classList.add('loaded');
+    selectTrack(2);
+  });
+});
+
+setupFileInput('fi-rain', file => {
+  document.getElementById('lm-rain').style.display = 'block';
+  document.getElementById('ts-rain').textContent = 'loading...';
+  readAsDataURL(file, data => {
+    if (!data) { document.getElementById('ts-rain').textContent = 'error'; return; }
+    rainData = data;
+    rainEl.src = data;
+    document.getElementById('ts-rain').textContent = '✓ ready';
+    document.getElementById('ln-rain').textContent = file.name;
+    document.getElementById('lm-rain').style.display = 'none';
+    document.getElementById('rain-sub').textContent = 'loaded · toggle to enable';
+    document.getElementById('rain-toggle').style.display = 'flex';
+    document.getElementById('tr-rain').classList.add('loaded');
+  });
+});
+
+function selectTrack(idx) {
+  selTrack = idx;
+  ['tr-0','tr-1','tr-2'].forEach((id, i) =>
+    document.getElementById(id).classList.toggle('act', i === idx)
+  );
+  if (playing) { musEl.pause(); startMusic(); }
+}
+
+// ── Track row click to select ────────────────────────────────
+['tr-0','tr-1','tr-2'].forEach((id, i) => {
+  document.getElementById(id).addEventListener('click', e => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'LABEL') return;
+    selectTrack(i);
+  });
+});
+
+function toggleRain() {
+  rainEnabled = document.getElementById('rain-chk').checked;
+  if (!playing) return;
+  if (rainEnabled && rainData) rainEl.play().catch(()=>{});
+  else rainEl.pause();
+}
+
+// ── Init Web Audio ───────────────────────────────────────────
+function initActx() {
+  if (actx) return;
+  actx = new (window.AudioContext || window.webkitAudioContext)();
+
+  masterGain = actx.createGain();
+  masterGain.gain.value = 1;
+  masterGain.connect(actx.destination);
+
+  musGainNode = actx.createGain();
+  musGainNode.gain.value = 0.85;
+  musGainNode.connect(masterGain);
+
+  rainGainNode = actx.createGain();
+  rainGainNode.gain.value = 0.30;
+  rainGainNode.connect(masterGain);
+
+  binGain = actx.createGain();
+  binGain.gain.value = 0.15;
+  binGain.connect(masterGain);
+
+  musSrc  = actx.createMediaElementSource(musEl);
+  musSrc.connect(musGainNode);
+
+  rainSrc = actx.createMediaElementSource(rainEl);
+  rainSrc.connect(rainGainNode);
+}
+
+// ── Music ────────────────────────────────────────────────────
+function startMusic() {
+  const data = trackData[selTrack];
+  if (!data) {
+    document.getElementById('np').textContent = 'no file loaded — tap load mp3 below';
+    document.getElementById('np').classList.remove('active');
+    return;
+  }
+  musEl.src = data;
+  musEl.play().catch(e => console.log('music err:', e));
+  document.getElementById('np').textContent = trackNames[selTrack];
+  document.getElementById('np').classList.add('active');
+}
+
+// ── Binaural ─────────────────────────────────────────────────
+function startBinaural() {
+  const merger = actx.createChannelMerger(2);
+  merger.connect(binGain);
+  binL = actx.createOscillator(); binL.type = 'sine'; binL.frequency.value = binBase;
+  binR = actx.createOscillator(); binR.type = 'sine'; binR.frequency.value = binBase + binBeat;
+  const gL = actx.createGain(); gL.gain.value = 1;
+  const gR = actx.createGain(); gR.gain.value = 1;
+  binL.connect(gL); gL.connect(merger, 0, 0);
+  binR.connect(gR); gR.connect(merger, 0, 1);
+  binL.start(); binR.start();
+}
+
+function stopBinaural() {
+  [binL, binR].forEach(o => { if(o) { try{o.stop()}catch(e){} }});
+  binL = null; binR = null;
+}
+
+// ── Toggle play ──────────────────────────────────────────────
+function togglePlay() {
+  initActx();
+  if (actx.state === 'suspended') actx.resume();
+  if (playing) {
+    playing = false;
+    musEl.pause(); rainEl.pause();
+    stopBinaural(); clearTimerInt(); updOrb();
+  } else {
+    playing = true;
+    // iOS background audio fix — silent loop keeps audio session alive
+    if (!window._bgFixApplied) {
+      window._bgFixApplied = true;
+      setTimeout(() => {
+        try {
+          const buf = actx.createBuffer(1, 1, actx.sampleRate);
+          const src = actx.createBufferSource();
+          src.buffer = buf; src.loop = true;
+          src.connect(actx.destination);
+          src.start(0);
+        } catch(e) {}
+      }, 300);
+    }
+    startMusic(); startBinaural();
+    if (rainEnabled && rainData) rainEl.play().catch(()=>{});
+    updOrb();
+    if (selMins > 0) startTimer();
+  }
+}
+
+function updOrb() {
+  const ow = document.getElementById('ow');
+  document.getElementById('pi').innerHTML = playing ? '&#9632;' : '&#9654;';
+  document.getElementById('ol').textContent = playing
+    ? binBase + ' Hz · ' + binBeat + ' Hz beat' : 'tap to begin';
+  playing ? ow.classList.add('on') : ow.classList.remove('on');
+}
+
+// ── Volume ───────────────────────────────────────────────────
+function updVol() {
+  const mv = parseInt(document.getElementById('vm').value);
+  const rv = parseInt(document.getElementById('vr').value);
+  const bv = parseInt(document.getElementById('vb').value);
+  document.getElementById('svm').textContent = mv + '%';
+  document.getElementById('svr').textContent = rv + '%';
+  document.getElementById('svb').textContent = bv + '%';
+  if (musGainNode)  musGainNode.gain.value  = mv / 100;
+  if (rainGainNode) rainGainNode.gain.value = rv / 100;
+  if (binGain)      binGain.gain.value      = bv / 100;
+}
+
+// ── Frequency ────────────────────────────────────────────────
+document.getElementById('fg').addEventListener('click', e => {
+  const btn = e.target.closest('.fb'); if (!btn) return;
+  document.querySelectorAll('.fb').forEach(b => b.classList.remove('act'));
+  btn.classList.add('act');
+  binBase = parseInt(btn.dataset.base);
+  binBeat = parseInt(btn.dataset.beat);
+  if (playing) { stopBinaural(); startBinaural(); updOrb(); }
+});
+
+// ── Timer ────────────────────────────────────────────────────
+document.querySelectorAll('.tmb').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.tmb').forEach(b => b.classList.remove('act'));
+    this.classList.add('act');
+    selMins = parseInt(this.dataset.m);
+    clearTimerInt();
+    document.getElementById('tmd').textContent = '';
+    document.getElementById('tmd').classList.remove('live');
+    if (playing && selMins > 0) startTimer();
+  });
+});
+
+function startTimer() {
+  timerSecs = selMins * 60; updTimer();
+  timerInt = setInterval(() => {
+    timerSecs--; updTimer();
+    if (timerSecs <= 0) { clearTimerInt(); fadeOut(); }
+  }, 1000);
+}
+function clearTimerInt() { if (timerInt) { clearInterval(timerInt); timerInt = null; } }
+function updTimer() {
+  const el = document.getElementById('tmd');
+  if (timerSecs <= 0) { el.textContent = ''; el.classList.remove('live'); return; }
+  const m = Math.floor(timerSecs / 60), s = timerSecs % 60;
+  el.textContent = 'fading in ' + m + ':' + (s < 10 ? '0' : '') + s;
+  el.classList.add('live');
+}
+function fadeOut() {
+  if (!masterGain || !actx) return;
+  masterGain.gain.linearRampToValueAtTime(0, actx.currentTime + 12);
+  setTimeout(() => {
+    playing = false; musEl.pause(); rainEl.pause(); stopBinaural();
+    masterGain.gain.value = 1; updOrb();
+    document.getElementById('tmd').textContent = '';
+    document.getElementById('tmd').classList.remove('live');
+  }, 13000);
+}
+</script>
+</body>
+</html>
